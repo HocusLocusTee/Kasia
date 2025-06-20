@@ -2,9 +2,9 @@
 // it is intended to be temporary to progressively move towards modularization
 
 import { FC, useCallback, useEffect, useState } from "react";
-import { KaspaClient } from "./utils/all-in-one";
 import { unknownErrorToErrorLike } from "./utils/errors";
 import { Contact, NetworkType } from "./types/all";
+import { FetchApiMessages } from "./components/FetchApiMessages";
 import { useMessagingStore } from "./store/messaging.store";
 import { ContactCard } from "./components/ContactCard";
 import { WalletInfo } from "./components/WalletInfo";
@@ -16,186 +16,45 @@ import styles from "./OneLiner.module.css";
 import clsx from "clsx";
 import { MessageSection } from "./containers/MessagesSection";
 
+// import our new hook
+import { useKaspaClient } from "./hooks/useKaspaClient";
+
 export const OneLiner: FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isWalletReady, setIsWalletReady] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [currentClient, setCurrentClient] = useState<KaspaClient | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState(
-    "Waiting for interaction"
-  );
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>(
     import.meta.env.VITE_DEFAULT_KASPA_NETWORK ?? "mainnet"
   );
-  const [connectionAttemptInProgress, setConnectionAttemptInProgress] =
-    useState(false);
 
   const messageStore = useMessagingStore();
   const walletStore = useWalletStore();
   const unlockedWalletName = useWalletStore(
     (state) => state.unlockedWallet?.name
   );
-
-  const connectToNetwork = useCallback(
-    async (networkId: NetworkType) => {
-      // Skip if already attempting connection
-      if (connectionAttemptInProgress) {
-        console.log("Connection attempt already in progress, skipping");
-        return;
-      }
-
-      setConnectionAttemptInProgress(true);
-
-      try {
-        setConnectionStatus("Connecting...");
-        setIsConnected(false);
-
-        // Disconnect existing client if any
-        if (currentClient?.connected) {
-          console.log("Disconnecting existing client");
-          await currentClient.disconnect();
-          setCurrentClient(null);
-        }
-
-        console.log(
-          `Attempting to connect to ${networkId} (type: ${typeof networkId})`
-        );
-        const client = new KaspaClient(networkId);
-
-        // Try to connect
-        console.log("Calling connect() on KaspaClient...");
-        await client.connect();
-        console.log("Connect() call completed");
-
-        if (client.connected) {
-          console.log(`Successfully connected to ${networkId}`);
-          setCurrentClient(client);
-          setIsConnected(true);
-          setConnectionStatus(`Connected to ${networkId}`);
-          walletStore.setSelectedNetwork(networkId);
-          // Update the RPC client in the wallet store
-          walletStore.setRpcClient(client);
-        } else {
-          console.log(`Failed to connect to ${networkId}`);
-          setIsConnected(false);
-          setConnectionStatus("Connection Failed");
-          setCurrentClient(null);
-          // Clear the RPC client in the wallet store
-          walletStore.setRpcClient(null);
-        }
-      } catch (error) {
-        console.error("Failed to connect:", error);
-        setIsConnected(false);
-        setCurrentClient(null);
-        if (error instanceof Error) {
-          setConnectionStatus(`Connection Failed: ${error.message}`);
-        } else {
-          setConnectionStatus("Connection Failed: Unknown error");
-        }
-      } finally {
-        setConnectionAttemptInProgress(false);
-      }
+  
+  // OneLiner.tsx – when you create the hook
+  const {
+    client: currentClient,
+    status: connectionStatus,
+    isConnected,
+    connect,
+    disconnect,
+  } = useKaspaClient(selectedNetwork, {
+    onConnect: (c) => {
+      walletStore.setSelectedNetwork(c.networkId); 
+      walletStore.setRpcClient(c);
     },
-    [currentClient, walletStore, connectionAttemptInProgress]
-  );
-
-  // Network connection effect
-  useEffect(() => {
-    // Skip if no network selected or connection attempt in progress
-    if (!selectedNetwork || connectionAttemptInProgress) {
-      return;
-    }
-
-    let isEffectActive = true;
-    let reconnectAttempts = 0;
-    const MAX_RECONNECT_ATTEMPTS = 3;
-    const RECONNECT_DELAY = 1000; // 1 second delay between attempts
-
-    const connect = async () => {
-      try {
-        if (!isEffectActive) return;
-
-        // Check if we need to reconnect
-        const needsReconnect =
-          !currentClient?.connected ||
-          currentClient?.networkId !== selectedNetwork;
-
-        if (needsReconnect) {
-          if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            setConnectionStatus(
-              "Failed to establish stable connection after multiple attempts"
-            );
-            setIsConnected(false);
-            setCurrentClient(null);
-            return;
-          }
-
-          reconnectAttempts++;
-          console.log(
-            `Connection attempt ${reconnectAttempts} of ${MAX_RECONNECT_ATTEMPTS} for ${selectedNetwork}`
-          );
-
-          // Add delay between reconnection attempts
-          if (reconnectAttempts > 1) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, RECONNECT_DELAY)
-            );
-          }
-
-          // Disconnect existing client if network changed
-          if (
-            currentClient?.connected &&
-            currentClient.networkId !== selectedNetwork
-          ) {
-            console.log(
-              `Disconnecting from ${currentClient.networkId} to connect to ${selectedNetwork}`
-            );
-            await currentClient.disconnect();
-            setCurrentClient(null);
-          }
-
-          await connectToNetwork(selectedNetwork);
-        } else {
-          console.log(
-            `Already connected to ${selectedNetwork}, no reconnection needed`
-          );
-          // Ensure connection state is synced with current client
-          setIsConnected(true);
-          setConnectionStatus(`Connected to ${selectedNetwork}`);
-        }
-      } catch (error) {
-        console.error("Network connection error:", error);
-        if (isEffectActive) {
-          setConnectionStatus(
-            `Connection error: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`
-          );
-          setIsConnected(false);
-          setCurrentClient(null);
-        }
-      }
-    };
-
-    connect();
-
-    return () => {
-      isEffectActive = false;
-    };
-  }, [
-    selectedNetwork,
-    connectToNetwork,
-    currentClient,
-    connectionAttemptInProgress,
-  ]);
+    onError: (e) => setErrorMessage(`Connection Failed: ${e.message}`),
+  });
 
   // Auto-clear connection-related errors when connection succeeds
   useEffect(() => {
     if (isConnected && connectionStatus.includes("Connected")) {
-      // Clear any connection-related error messages
-      if (errorMessage?.includes("WebSocket") || 
-          errorMessage?.includes("RPC") || 
-          errorMessage?.includes("Failed to start messaging")) {
+      if (
+        errorMessage?.includes("WebSocket") ||
+        errorMessage?.includes("RPC") ||
+        errorMessage?.includes("Failed to start messaging")
+      ) {
         setErrorMessage(null);
       }
     }
@@ -213,9 +72,6 @@ export const OneLiner: FC = () => {
       }
 
       messageStore.setIsCreatingNewChat(true);
-
-      // The UI should now show a form to enter recipient address
-      // When address is entered, it will call initiateHandshake
     } catch (error) {
       console.error("Failed to start new chat:", error);
       setErrorMessage(
@@ -226,9 +82,8 @@ export const OneLiner: FC = () => {
 
   const onStartMessagingProcessClicked = useCallback(async () => {
     try {
-      // Clear any previous error messages
       setErrorMessage(null);
-      
+
       if (!currentClient || !currentClient.connected) {
         setErrorMessage(
           "Please choose a network and connect to the Kaspa Network first"
@@ -244,15 +99,22 @@ export const OneLiner: FC = () => {
       const { receiveAddress } = await walletStore.start(currentClient);
       const receiveAddressStr = receiveAddress.toString();
 
-      // Initialize conversation manager
       messageStore.initializeConversationManager(receiveAddressStr);
-
-      // Load existing messages
       messageStore.loadMessages(receiveAddressStr);
       messageStore.setIsLoaded(true);
-      
-      // Clear error message on success
       setErrorMessage(null);
+
+      const shouldFetchApi = localStorage.getItem("kasia_fetch_api_on_start");
+      if (shouldFetchApi === "true") {
+        setTimeout(() => {
+          window.dispatchEvent(
+            new CustomEvent("kasia-trigger-api-fetch", {
+              detail: { address: receiveAddressStr },
+            })
+          );
+        }, 1000);
+        localStorage.removeItem("kasia_fetch_api_on_start");
+      }
     } catch (error) {
       console.error("Failed to start messaging process:", error);
       setErrorMessage(
@@ -267,7 +129,6 @@ export const OneLiner: FC = () => {
         console.error("No wallet address");
         return;
       }
-
       messageStore.setIsCreatingNewChat(false);
       messageStore.setOpenedRecipient(contact.address);
     },
@@ -281,7 +142,6 @@ export const OneLiner: FC = () => {
           <img src="/kasia-logo.png" alt="Kasia Logo" className="app-logo" />
           <h1>Kasia</h1>
         </div>
-
         <div className="header-right">
           <WalletInfo
             state={walletStore.address ? "connected" : "detected"}
@@ -367,16 +227,21 @@ export const OneLiner: FC = () => {
             </div>
           </div>
           <MessageSection />
+          {walletStore.address && (
+            <div className="hidden">
+              <FetchApiMessages address={walletStore.address.toString()} />
+            </div>
+          )}
         </div>
       ) : null}
+
       <div id="transactions">
-        <ErrorCard 
-          error={errorMessage} 
-          onDismiss={() => setErrorMessage(null)} 
+        <ErrorCard
+          error={errorMessage}
+          onDismiss={() => setErrorMessage(null)}
         />
       </div>
 
-      {/* Add NewChatForm when isCreatingNewChat is true */}
       {messageStore.isCreatingNewChat && (
         <div className={styles["modal-overlay"]}>
           <NewChatForm
