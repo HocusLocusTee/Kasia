@@ -5,7 +5,6 @@ import { WalletStorage } from "../utils/wallet-storage";
 import { decrypt_message, EncryptedMessage } from "cipher";
 import { Transaction } from "../types/all";
 import { getApiEndpoint } from "../config/nodes";
-import "./FetchApiMessages.css";
 import { CipherHelper } from "../utils/cipher-helper";
 import { Message } from "../types/all";
 import {
@@ -643,7 +642,7 @@ export const FetchApiMessages: FC<FetchApiMessagesProps> = ({ address }) => {
   };
 
   return (
-    <div className="api-messages-button">
+          <div className="relative inline-block">
       <button
         onClick={fetchAndProcessMessages}
         disabled={loading}
@@ -653,7 +652,7 @@ export const FetchApiMessages: FC<FetchApiMessagesProps> = ({ address }) => {
       >
         {loading ? "Loading..." : "Refresh Messages"}
       </button>
-      {error && <div className="api-error-tooltip">{error}</div>}
+              {error && <div className="absolute -bottom-8 left-0 bg-red-500 text-white py-1 px-2 rounded text-xs whitespace-nowrap z-10">{error}</div>}
     </div>
   );
 };

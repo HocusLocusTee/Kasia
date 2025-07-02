@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useMessagingStore } from '../store/messaging.store';
 import { useWalletStore } from '../store/wallet.store';
 import { kaspaToSompi, sompiToKaspaString } from 'kaspa-wasm';
-import styles from './NewChatForm.module.css';
 
 interface NewChatFormProps {
   onClose: () => void;
@@ -181,29 +180,29 @@ export const NewChatForm: React.FC<NewChatFormProps> = ({ onClose }) => {
   if (showConfirmation) {
     return (
       <div className="modal-overlay" onClick={handleOverlayClick}>
-        <div className={styles['new-chat-form']} onClick={(e) => e.stopPropagation()}>
-          <h3 className={styles.title}>Confirm Handshake</h3>
-          <div className={styles['confirmation-details']}>
+        <div className="bg-[var(--secondary-bg)] p-5 rounded-xl relative max-w-lg w-[90%] max-h-[90vh] overflow-y-auto border border-[var(--border-color)] animate-[modalFadeIn_0.3s_ease-out] text-white" onClick={(e) => e.stopPropagation()}>
+          <h3 className="my-0 mb-5 text-white text-xl">Confirm Handshake</h3>
+          <div className="text-white/80 text-sm mb-5 leading-6">
             <p><strong>Recipient:</strong> {recipientAddress}</p>
             <p><strong>Amount:</strong> {handshakeAmount} KAS</p>
             <p><strong>Your Balance:</strong> {balance?.matureDisplay || "0"} KAS</p>
             {parseFloat(handshakeAmount) > 0.2 && (
-              <p className={styles['info-text']}>
+              <p className="text-white/70 text-xs mt-1 leading-6">
                 The extra amount ({(parseFloat(handshakeAmount) - 0.2).toFixed(8)} KAS) helps the recipient respond even if they have no KAS.
               </p>
             )}
             {/* Only show warning if user is NOT sending extra amount */}
             {recipientWarning && parseFloat(handshakeAmount) <= 0.2 && (
-              <p className={styles['warning-text']}>
+              <p className="text-amber-400 text-sm my-1 leading-6">
                 {recipientWarning}
               </p>
             )}
             <p>This will initiate a handshake conversation. Continue?</p>
           </div>
-          <div className={styles['form-actions']}>
+          <div className="flex justify-end gap-2 mt-5">
             <button
               type="button"
-              className={styles['cancel-button']}
+              className="py-2 px-5 border-none rounded cursor-pointer text-sm font-bold transition-all bg-gray-600 text-white hover:bg-gray-500 disabled:opacity-60 disabled:cursor-not-allowed hover:disabled:bg-gray-600 active:disabled:translate-y-0 hover:disabled:translate-y-0 hover:-translate-y-px active:translate-y-0"
               onClick={() => setShowConfirmation(false)}
               disabled={isLoading}
             >
@@ -211,7 +210,7 @@ export const NewChatForm: React.FC<NewChatFormProps> = ({ onClose }) => {
             </button>
             <button
               type="button"
-              className={styles['submit-button']}
+              className="py-2 px-5 border-none rounded cursor-pointer text-sm font-bold transition-all bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed hover:disabled:bg-blue-500 active:disabled:translate-y-0 hover:disabled:translate-y-0 hover:-translate-y-px active:translate-y-0"
               onClick={confirmHandshake}
               disabled={isLoading}
             >
@@ -223,104 +222,104 @@ export const NewChatForm: React.FC<NewChatFormProps> = ({ onClose }) => {
     );
   }
 
-  return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className={styles['new-chat-form']} onClick={(e) => e.stopPropagation()}>
-        <h3 className={styles.title}>Start New Conversation</h3>
-        <form onSubmit={handleSubmit}>
-          <div className={styles['form-group']}>
-            <label className={styles.label} htmlFor="recipientAddress">
-              Recipient Address
-            </label>
-            <input
-              className={styles.input}
-              type="text"
-              id="recipientAddress"
-              value={recipientAddress}
-              onChange={(e) => setRecipientAddress(e.target.value)}
-              placeholder="kaspa:..."
-              disabled={isLoading}
-              required
-            />
-            {isCheckingRecipient && (
-              <div className={styles['checking-text']}>
-                Checking recipient balance...
+      return (
+      <div className="modal-overlay" onClick={handleOverlayClick}>
+        <div className="bg-[var(--secondary-bg)] p-5 rounded-xl relative max-w-lg w-[90%] max-h-[90vh] overflow-y-auto border border-[var(--border-color)] animate-[modalFadeIn_0.3s_ease-out] text-white" onClick={(e) => e.stopPropagation()}>
+          <h3 className="my-0 mb-5 text-white text-xl">Start New Conversation</h3>
+                  <form onSubmit={handleSubmit}>
+            <div className="mb-5">
+              <label className="block mb-1 text-white font-bold text-sm" htmlFor="recipientAddress">
+                Recipient Address
+              </label>
+              <input
+                className="w-full py-2 px-3 border border-white/10 rounded-md text-sm bg-black/30 text-white font-mono transition-all box-border leading-normal h-10 flex items-center placeholder-white/50 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:bg-white/10 focus:border-white/20 disabled:bg-black/50 disabled:text-white/30"
+                type="text"
+                id="recipientAddress"
+                value={recipientAddress}
+                onChange={(e) => setRecipientAddress(e.target.value)}
+                placeholder="kaspa:..."
+                disabled={isLoading}
+                required
+              />
+              {isCheckingRecipient && (
+                <div className="text-white/60 text-xs mt-1 italic">
+                  Checking recipient balance...
+                </div>
+              )}
+              {recipientWarning && (
+                <div className="bg-amber-500/10 text-amber-400 py-2 px-2 rounded border border-amber-500/30 mt-1 text-sm leading-normal">
+                  {recipientWarning}
+                </div>
+              )}
+            </div>
+
+                      <div className="mb-5">
+              <label className="block mb-1 text-white font-bold text-sm" htmlFor="handshakeAmount">
+                Handshake Amount (KAS)
+              </label>
+              <input
+                className="w-full py-2 px-3 border border-white/10 rounded-md text-sm bg-black/30 text-white font-mono transition-all box-border leading-normal h-10 flex items-center mb-2 placeholder-white/50 hover:bg-white/10 hover:border-white/20 focus:outline-none focus:bg-white/10 focus:border-white/20"
+                type="text"
+                id="handshakeAmount"
+                value={handshakeAmount}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                placeholder="0.2"
+                disabled={isLoading}
+              />
+              <div className="flex gap-2 mb-2">
+                              <button
+                  type="button"
+                  className={`flex-1 bg-blue-500/20 border border-blue-500/50 rounded text-blue-400 cursor-pointer py-2 px-3 transition-all text-xs font-bold h-9 flex items-center justify-center hover:bg-blue-500/30 hover:border-blue-500 hover:-translate-y-px disabled:bg-blue-500/10 disabled:border-blue-500/20 disabled:text-blue-500/30 disabled:cursor-not-allowed disabled:transform-none ${handshakeAmount === '0.2' ? 'bg-blue-500 border-blue-500 text-white' : ''}`}
+                  onClick={() => handleQuickAmount('0.2')}
+                  disabled={isLoading}
+                >
+                  0.2
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 bg-blue-500/20 border border-blue-500/50 rounded text-blue-400 cursor-pointer py-2 px-3 transition-all text-xs font-bold h-9 flex items-center justify-center hover:bg-blue-500/30 hover:border-blue-500 hover:-translate-y-px disabled:bg-blue-500/10 disabled:border-blue-500/20 disabled:text-blue-500/30 disabled:cursor-not-allowed disabled:transform-none ${handshakeAmount === '0.5' ? 'bg-blue-500 border-blue-500 text-white' : ''}`}
+                  onClick={() => handleQuickAmount('0.5')}
+                  disabled={isLoading}
+                >
+                  0.5
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 bg-blue-500/20 border border-blue-500/50 rounded text-blue-400 cursor-pointer py-2 px-3 transition-all text-xs font-bold h-9 flex items-center justify-center hover:bg-blue-500/30 hover:border-blue-500 hover:-translate-y-px disabled:bg-blue-500/10 disabled:border-blue-500/20 disabled:text-blue-500/30 disabled:cursor-not-allowed disabled:transform-none ${handshakeAmount === '1' ? 'bg-blue-500 border-blue-500 text-white' : ''}`}
+                  onClick={() => handleQuickAmount('1')}
+                  disabled={isLoading}
+                >
+                  1
+                </button>
+            </div>
+                          <div className="text-white/70 text-xs mt-1 leading-6">
+                Default: 0.2 KAS. Higher amounts help recipients respond even if they have no KAS.
+                This creates a better experience for newcomers to Kasia.
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-500/10 text-red-400 py-2 px-2 rounded border border-red-500/30 mb-4 text-sm">
+                {error}
               </div>
             )}
-            {recipientWarning && (
-              <div className={styles['warning-message']}>
-                {recipientWarning}
-              </div>
-            )}
-          </div>
-
-          <div className={styles['form-group']}>
-            <label className={styles.label} htmlFor="handshakeAmount">
-              Handshake Amount (KAS)
-            </label>
-            <input
-              className={styles['amount-input']}
-              type="text"
-              id="handshakeAmount"
-              value={handshakeAmount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-              placeholder="0.2"
-              disabled={isLoading}
-            />
-            <div className={styles['amount-buttons']}>
+            <div className="flex justify-end gap-2 mt-5">
               <button
                 type="button"
-                className={`${styles['amount-button']} ${handshakeAmount === '0.2' ? styles['active'] : ''}`}
-                onClick={() => handleQuickAmount('0.2')}
+                className="py-2 px-5 border-none rounded cursor-pointer text-sm font-bold transition-all bg-gray-600 text-white hover:bg-gray-500 disabled:opacity-60 disabled:cursor-not-allowed hover:disabled:bg-gray-600 active:disabled:translate-y-0 hover:disabled:translate-y-0 hover:-translate-y-px active:translate-y-0"
+                onClick={onClose}
                 disabled={isLoading}
               >
-                0.2
+                Cancel
               </button>
               <button
-                type="button"
-                className={`${styles['amount-button']} ${handshakeAmount === '0.5' ? styles['active'] : ''}`}
-                onClick={() => handleQuickAmount('0.5')}
+                type="submit"
+                className="py-2 px-5 border-none rounded cursor-pointer text-sm font-bold transition-all bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed hover:disabled:bg-blue-500 active:disabled:translate-y-0 hover:disabled:translate-y-0 hover:-translate-y-px active:translate-y-0"
                 disabled={isLoading}
               >
-                0.5
-              </button>
-              <button
-                type="button"
-                className={`${styles['amount-button']} ${handshakeAmount === '1' ? styles['active'] : ''}`}
-                onClick={() => handleQuickAmount('1')}
-                disabled={isLoading}
-              >
-                1
+                {isLoading ? 'Initiating...' : 'Start Chat'}
               </button>
             </div>
-            <div className={styles['info-text']}>
-              Default: 0.2 KAS. Higher amounts help recipients respond even if they have no KAS.
-              This creates a better experience for newcomers to Kasia.
-            </div>
-          </div>
-
-          {error && (
-            <div className={styles['error-message']}>
-              {error}
-            </div>
-          )}
-          <div className={styles['form-actions']}>
-            <button
-              type="button"
-              className={styles['cancel-button']}
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={styles['submit-button']}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Initiating...' : 'Start Chat'}
-            </button>
-          </div>
         </form>
       </div>
     </div>

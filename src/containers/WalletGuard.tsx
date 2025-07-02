@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useWalletStore } from "../store/wallet.store";
 import { Mnemonic } from "kaspa-wasm";
-import "./WalletGuard.css";
 import { NetworkSelector } from "./NetworkSelector";
 import { NetworkType } from "../types/all";
 import { Wallet, WalletDerivationType } from "src/types/wallet.type";
@@ -208,72 +207,72 @@ export const WalletGuard = ({
   const getDerivationTypeDisplay = (derivationType?: WalletDerivationType) => {
     if (derivationType === "standard") {
       return (
-        <span className="derivation-standard">
+        <span className="bg-emerald-500 text-white py-1 px-2 rounded text-xs font-medium">
           Standard (Kaspium Compatible)
         </span>
       );
     } else {
-      return <span className="derivation-legacy">Legacy</span>;
+      return <span className="bg-amber-500 text-white py-1 px-2 rounded text-xs font-medium">Legacy</span>;
     }
   };
 
   if (step.type === "home") {
     return (
-      <div className="wallet-guard">
+      <div className="max-w-2xl mx-auto my-8 p-8 bg-[var(--secondary-bg)] rounded-xl border border-[var(--border-color)]">
         <NetworkSelector
           selectedNetwork={selectedNetwork}
           onNetworkChange={onNetworkChange}
           isConnected={isConnected}
         />
-        <h2>Select Wallet</h2>
-        <div className="wallet-list">
-          {wallets.map((wallet) => (
-            <div key={wallet.id} className="wallet-item">
-              <div className="wallet-info">
-                <div className="wallet-name">{wallet.name}</div>
-                <div className="wallet-created">
-                  Created: {new Date(wallet.createdAt).toLocaleDateString()}
-                </div>
-                <div className="wallet-derivation">
+        <h2 className="text-center my-8 text-[var(--text-primary)] text-2xl font-semibold">Select Wallet</h2>
+        <div className="flex flex-col gap-4 mb-8">
+                      {wallets.map((wallet) => (
+              <div key={wallet.id} className="bg-[var(--primary-bg)] border border-[var(--border-color)] rounded-lg p-4 flex justify-between items-center">
+                <div className="flex flex-col gap-2">
+                  <div className="font-semibold text-[var(--text-primary)]">{wallet.name}</div>
+                  <div className="text-sm text-[var(--text-secondary)]">
+                    Created: {new Date(wallet.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center gap-2">
                   {getDerivationTypeDisplay(wallet.derivationType)}
-                  {wallet.derivationType === "legacy" && (
-                    <button
-                      onClick={() => onClickStep("migrate", wallet.id)}
-                      className="migrate-button"
-                      title="Migrate to standard derivation for Kaspium compatibility"
-                    >
-                      Migrate
-                    </button>
-                  )}
+                                      {wallet.derivationType === "legacy" && (
+                      <button
+                        onClick={() => onClickStep("migrate", wallet.id)}
+                        className="bg-blue-500 text-white border-none py-1 px-2 rounded cursor-pointer text-xs transition-colors hover:bg-blue-600"
+                        title="Migrate to standard derivation for Kaspium compatibility"
+                      >
+                        Migrate
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="wallet-actions">
-                <button
-                  onClick={() => onSelectWallet(wallet)}
-                  className="select-button"
-                >
-                  Select
-                </button>
-                <button
-                  onClick={() => onDeleteWallet(wallet.id)}
-                  className="delete-button"
-                >
-                  Delete
-                </button>
-              </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onSelectWallet(wallet)}
+                    className="bg-[var(--accent-blue)] text-white border-none py-2 px-4 rounded-md cursor-pointer text-sm transition-colors hover:bg-[var(--accent-blue)]/90"
+                  >
+                    Select
+                  </button>
+                  <button
+                    onClick={() => onDeleteWallet(wallet.id)}
+                    className="bg-transparent text-red-500 border border-red-500 py-2 px-4 rounded-md cursor-pointer text-sm transition-all hover:bg-red-500 hover:text-white"
+                  >
+                    Delete
+                  </button>
+                </div>
             </div>
           ))}
         </div>
-        <div className="wallet-options">
+        <div className="flex gap-4 justify-center">
           <button
             onClick={() => onClickStep("create")}
-            className="create-wallet-button"
+            className="bg-[var(--accent-blue)] text-white border-none py-3 px-6 rounded-lg cursor-pointer text-base transition-colors hover:bg-[var(--accent-blue)]/90"
           >
             Create New Wallet
           </button>
           <button
             onClick={() => onClickStep("import")}
-            className="import-wallet-button"
+            className="bg-[var(--accent-blue)] text-white border-none py-3 px-6 rounded-lg cursor-pointer text-base transition-colors hover:bg-[var(--accent-blue)]/90"
           >
             Import Wallet
           </button>
@@ -284,16 +283,16 @@ export const WalletGuard = ({
 
   if (step.type === "create" || step.type === "import") {
     return (
-      <div className="wallet-guard">
-        <h2>
+      <div className="max-w-2xl mx-auto my-8 p-8 bg-[var(--secondary-bg)] rounded-xl border border-[var(--border-color)]">
+        <h2 className="text-center my-8 text-[var(--text-primary)] text-2xl font-semibold">
           {step.type === "create" ? "Create New Wallet" : "Import Wallet"}
         </h2>
 
         {/* Derivation Type Selection */}
-        <div className="form-group">
-          <label>Derivation Standard</label>
-          <div className="derivation-options">
-            <label className="radio-option">
+        <div className="mb-4">
+          <label className="block mb-2 font-medium text-white">Derivation Standard</label>
+          <div className="flex flex-col gap-3 mt-2">
+            <label className="flex items-start gap-2 p-3 bg-[var(--primary-bg)] border border-[var(--border-color)] rounded-md cursor-pointer transition-all hover:border-[var(--accent-blue)] hover:bg-blue-500/5">
               <input
                 type="radio"
                 name="derivationType"
@@ -302,11 +301,14 @@ export const WalletGuard = ({
                 onChange={(e) =>
                   setDerivationType(e.target.value as WalletDerivationType)
                 }
+                className="w-auto m-0 accent-[var(--accent-blue)]"
               />
-              <span>Standard (Recommended)</span>
-              <small>Compatible with Kaspium and other standard wallets</small>
+              <div>
+                <span className="font-medium text-[var(--text-primary)]">Standard (Recommended)</span>
+                <small className="block text-[var(--text-secondary)] text-sm mt-1">Compatible with Kaspium and other standard wallets</small>
+              </div>
             </label>
-            <label className="radio-option">
+            <label className="flex items-start gap-2 p-3 bg-[var(--primary-bg)] border border-[var(--border-color)] rounded-md cursor-pointer transition-all hover:border-[var(--accent-blue)] hover:bg-blue-500/5">
               <input
                 type="radio"
                 name="derivationType"
@@ -315,16 +317,19 @@ export const WalletGuard = ({
                 onChange={(e) =>
                   setDerivationType(e.target.value as WalletDerivationType)
                 }
+                className="w-auto m-0 accent-[var(--accent-blue)]"
               />
-              <span>Legacy</span>
-              <small>For compatibility with older wallets</small>
+              <div>
+                <span className="font-medium text-[var(--text-primary)]">Legacy</span>
+                <small className="block text-[var(--text-secondary)] text-sm mt-1">For compatibility with older wallets</small>
+              </div>
             </label>
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Wallet Name</label>
-          <input ref={nameRef} type="text" placeholder="My Wallet" />
+        <div className="mb-4">
+          <label className="block mb-2 font-medium text-white">Wallet Name</label>
+          <input ref={nameRef} type="text" placeholder="My Wallet" className="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded text-white transition-all focus:outline-none focus:border-slate-500 focus:bg-slate-600" />
         </div>
 
         {step.type === "create" && (

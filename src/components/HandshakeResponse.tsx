@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useMessagingStore } from "../store/messaging.store";
-import "../styles/HandshakeResponse.css";
 import {
   PendingConversation,
   RejectedConversation,
@@ -39,17 +38,17 @@ export const HandshakeResponse: React.FC<{
   };
 
   return (
-    <div className="handshake-response">
-      <div className="handshake-info">
-        <p>Handshake received from: {conversation.kaspaAddress}</p>
-        <p>Their alias: {conversation.theirAlias}</p>
-        <p>Status: {conversation.status}</p>
-        {error && <p className="error">{error}</p>}
+    <div className="bg-gray-100 rounded-lg p-4 my-2">
+      <div className="mb-3">
+        <p className="my-1 text-gray-800">Handshake received from: {conversation.kaspaAddress}</p>
+        <p className="my-1 text-gray-800">Their alias: {conversation.theirAlias}</p>
+        <p className="my-1 text-gray-800">Status: {conversation.status}</p>
+        {error && <p className="text-red-600 mt-2">{error}</p>}
       </div>
       {!conversation.initiatedByMe && conversation.status === "pending" && (
         <button
           onClick={handleRespond}
-          className="respond-button"
+          className="bg-green-600 text-white border-none rounded py-2 px-4 cursor-pointer text-sm disabled:bg-gray-500 disabled:cursor-not-allowed hover:bg-green-700 hover:disabled:bg-gray-500"
           disabled={isResponding}
         >
           {isResponding ? "Sending Response..." : "Accept & Send Response"}

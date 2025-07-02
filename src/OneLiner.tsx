@@ -12,7 +12,6 @@ import { ErrorCard } from "./components/ErrorCard";
 import { useWalletStore } from "./store/wallet.store";
 import { WalletGuard } from "./containers/WalletGuard";
 import { NewChatForm } from "./components/NewChatForm";
-import styles from "./OneLiner.module.css";
 import clsx from "clsx";
 import { MessageSection } from "./containers/MessagesSection";
 import { FetchApiMessages } from "./components/FetchApiMessages";
@@ -317,11 +316,11 @@ export const OneLiner: FC = () => {
   };
 
   return (
-    <div className="container">
-      <div className="header-container">
-        <div className="app-title flex items-center gap-2">
-          <img src="/kasia-logo.png" alt="Kasia Logo" className="app-logo" />
-          <h1 className="text-xl font-bold">Kasia</h1>
+    <div className="w-full">
+      <div className="text-center py-1 px-8 border-b border-[var(--border-color)] relative flex items-center justify-between bg-[var(--secondary-bg)]">
+        <div className="flex items-center gap-2">
+          <img src="/kasia-logo.png" alt="Kasia Logo" className="w-8 h-8" />
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] m-0 tracking-tight">Kasia</h1>
         </div>
 
         {isWalletReady && (
@@ -406,9 +405,9 @@ export const OneLiner: FC = () => {
       </div>
 
       {messageStore.isLoaded ? (
-        <div className="messages-container">
-          <div className="contacts-sidebar">
-            <div className="contacts-header">
+        <div className="bg-[var(--secondary-bg)] rounded-xl shadow-lg max-w-6xl w-full mx-auto border border-[var(--border-color)] flex overflow-hidden h-[700px] min-w-80">
+          <div className="w-70 bg-[var(--primary-bg)] border-r border-[var(--border-color)] flex flex-col">
+            <div className="p-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--secondary-bg)] h-15">
               <div className="font-bold">Conversations</div>
               <button
                 onClick={onNewChatClicked}
@@ -417,7 +416,7 @@ export const OneLiner: FC = () => {
                 <PlusIcon className="size-8" />
               </button>
             </div>
-            <div className="contacts-list overflow-y-auto">
+            <div className="flex-1 overflow-y-auto p-2">
               {messageStore.contacts
                 ?.filter(
                   (c) =>
@@ -451,7 +450,7 @@ export const OneLiner: FC = () => {
 
       {/* Add NewChatForm when isCreatingNewChat is true */}
       {messageStore.isCreatingNewChat && (
-        <div className={styles["modal-overlay"]}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]">
           <NewChatForm
             onClose={() => messageStore.setIsCreatingNewChat(false)}
           />
@@ -459,8 +458,8 @@ export const OneLiner: FC = () => {
       )}
 
       {isAddressModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]">
+          <div className="bg-[var(--secondary-bg)] rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto border border-[var(--border-color)] animate-[modalFadeIn_0.3s_ease-out]">
             <WalletAddressSection address={walletStore.address?.toString()} />
             <button
               onClick={() => setIsAddressModalOpen(false)}
